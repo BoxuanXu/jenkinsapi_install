@@ -1,0 +1,38 @@
+dist: trusty
+group: edge
+language: python
+python:
+- '2.7'
+- '3.4'
+- '3.5'
+env:
+- JENKINS_VERSION=stable
+- JENKINS_VERSION=latest
+before_install:
+- jdk_switcher use oraclejdk8
+install:
+- pip install tox-travis
+- python setup.py -q sdist bdist_wheel
+script:
+- tox
+after_success:
+- codecov
+jobs:
+  include:
+    - stage: release
+      python: 2.7
+      script: python setup.py -q sdist bdist_wheel
+      deploy:
+        provider: releases
+        api_key:
+          secure: Ac6anfwQu0WyVj7q9GqD1OJI3WTM3Lk0xO42oJwh4EphXpRCFGvgE4XjaPxh4qVHlgIw8AQ4Phpm0UYal/XTLVNuJDPHOdOUUxUJdJYQkW3hT2odOSCPU47Xa0/pGHIrgX3gEOTO0hAjziL5c41cGR2wMWFp6/CObIg3+gqtrzk=
+        file_glob: true
+        file:
+        - dist/*
+        - ChangeLog
+        - AUTHORS
+        skip_cleanup: true
+        on:
+          branch: master
+          repo: pycontribs/jenkinsapi
+          tags: true
